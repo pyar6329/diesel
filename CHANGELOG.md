@@ -6,6 +6,59 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 
 
 ## [1.4.8] - 2021-09-20
+### Added
+
+* `NonAggregate` can now be derived for simple cases.
+
+* `Connection` and `SimpleConnection` traits are implemented for a broader range
+  of `r2d2::PooledConnection<M>` types when the `r2d2` feature is enabled.
+
+* Added `DatabaseErrorKind::ReadOnlyTransaction` to allow applications to
+  handle errors caused by writing when only allowed to read.
+
+* All expression methods can now be called on expressions of nullable types.
+
+* Added `BoxedSqlQuery`. This allows users to do a variable amount of `.sql` or
+  `.bind` calls without changing the underlying type.
+
+* Added `.sql` to `SqlQuery` and `UncheckedBind` to allow appending SQL code to
+  an existing query.
+
+* The `MacAddr` SQL type can now be used without enabling the `network-address`
+  feature.
+
+### Removed
+
+* All previously deprecated items have been removed.
+* Support for uuid version < 0.7.0 has been removed
+
+### Changed
+
+* The way [the `Backend` trait][backend-2-0-0] handles its `RawValue` type has
+  been changed to allow non-references. Users of this type (e.g. code written
+  `&DB::RawValue` or `&<DB as Backend>::RawValue>`) should use
+  [`backend::RawValue<DB>`][raw-value-2-0-0] instead. Implementors of `Backend`
+  should check the relevant section of [the migration guide][2-0-migration].
+
+[backend-2-0-0]: http://docs.diesel.rs/diesel/backend/trait.Backend.html
+[raw-value-2-0-0]: http://docs.diesel.rs/diesel/backend/type.RawValue.html
+
+* The type metadata for MySQL has been changed to include sign information. If
+  you are implementing `HasSqlType` for `Mysql` manually, or manipulating a
+  `Mysql::TypeMetadata`, you will need to take the new struct
+  `MysqlTypeMetadata` instead.
+
+* The minimal officially supported rustc version is now 1.37.0
+
+* The `RawValue` types for the `Mysql` and `Postgresql` backend where changed
+  from `[u8]` to distinct opaque types. If you used the concrete `RawValue` type
+  somewhere you need to change it to `mysql::MysqlValue` or `pg::PgValue`.
+  For the postgres backend additionally type information where added to the `RawValue`
+  type. This allows to dynamically deserialize `RawValues` in container types.
+
+* The uuidv07 feature was renamed to uuid, due to the removal of support for older uuid versions
+
+* Boxed queries (constructed from `.into_boxed()`) are now `Send`.
 
 ### Fixed
 
